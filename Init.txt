@@ -1,0 +1,24 @@
+0 - TimeStart
+36000 - TimeEnd
+4 - how many containers
+content		ID
+content		ID
+content		ID
+content		ID
+condition	TimeInWork	CodePrior	IDcont	PPR	MotorTime	VirginMotorTime	RunTime
+гран
+пресс
+уср
+лаб
+проб
+стеар
+
+
+гнёзда
+IDCont ID>10
+
+манипулятор
+condition	IDCont	IDdestination	TimeEnd	PPR	MotorTime	VirginMotorTime
+
+
+
