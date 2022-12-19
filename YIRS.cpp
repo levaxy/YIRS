@@ -152,7 +152,9 @@ void Managing(ifstream& BD, vector<Operation*>& obj,Manipulator& manip){//Над
 }
 
 int main(){
-///////////////////////////////////////////
+
+	// Открытие файлов, запись подписей столбцов
+    ///////////////////////////////////////////
 
 	ifstream init;
 	init.open("Init2.txt");
@@ -172,17 +174,22 @@ int main(){
 	out_MotoTime << "time\tmanip\tgran\tpress\taverat\tlaba\tproba\tStZn\n";
 	/////////////////////////////////////////////////////////////////////////////////////////
 
+
+	// Объявление векторов 
+
 	vector<Container*> containers;
 	vector<Operation*> Objects;
 	vector<Cell*> Cells;
 	vector<int> Queue;
 
-	int tStart = 0, tend = 0, QuantCont = 4;
-
+	int tStart = 0, tend = 0, QuantCont = 4;// время начала, конца моделирования, количество контейнеров на линии
+	// Говорим вектору, сколько там будет элементов, чтоб при добавлении очередного элемента не перевыделялась память заново
 	Cells.reserve(3);
 	containers.reserve(QuantCont);
 	Queue.reserve(QuantCont);
 	Objects.reserve(8);
+
+	// Массив контейнеров создаём
 	Container c1{};
 	Container c2{};
 	Container c3{};
@@ -192,7 +199,10 @@ int main(){
 	containers.push_back(&c2);
 	containers.push_back(&c3);
 	containers.push_back(&c4);
+	////////////////////////////////////////////////////////////
 
+	////////////////////////////////////////////////////////////
+	// Создаём объекты
 	Manipulator manip;
 	Storage stor;
 	Granulating granulation;
@@ -201,7 +211,8 @@ int main(){
 	Laba lab;
 	AddStZn addSt;
 	Press press;
-
+	
+	// Налаживаем связи между ними
 	granulation.NextOper = &averaging;
 	averaging.NextOper = &probe;
 	probe.laba = &lab;
@@ -209,7 +220,8 @@ int main(){
 	addSt.NextOper = &averaging;
 	press.aver = &averaging;
 	press.NextOper = &granulation;
-
+	//////////////////////////////////////////////
+	// Создание массива гнёзд
 	Cell Cell1{};
 	Cell Cell2{};
 	Cell Cell3{};
@@ -217,13 +229,16 @@ int main(){
 	Cells.push_back(&Cell1);
 	Cells.push_back(&Cell2);
 	Cells.push_back(&Cell3);
+
+	// Каждое гнездо знакомим с операциями, связанными с хранилищем
 	for(Cell*& n: Cells){
 		n->addstzn = &addSt;
 		n->granulator = &granulation;
 		n->press = &press;
 	}
-	stor.SetCells(Cells);
+	stor.SetCells(Cells);// В поле хранилища записываем вектор с гнёздами
 
+	// В вектор добавляем объекты
 	Objects.push_back(&granulation);//гран, пресс, уср, лаба, проба, стеарат
 	Objects.push_back(&press);
 	Objects.push_back(&averaging);
@@ -236,34 +251,48 @@ int main(){
 	Init(init, Objects, manip, stor, tStart, tend, containers, Cells);
 
  ////////////////////////////////////////////////////////////
+
 	for (size_t t = tStart; t < tend; t++){
+		// Открытие файлов на запись текущей строчки(out and out_MotoTime каждую итерацию открываю и закрываю, чтоб при отладке можно было наблюдать, что туда пишется)
 		///////////////////////////////////////////////////////////
 		out.open("Out_Condition.txt", ios::app);
 		out_MotoTime.open("Out_MotoTime.txt",ios::app);
 		BDout.open("BD.txt", ios::app);
+
+		// В BD пишутся состояния на текущий момент времени 
 		////////////////////////////////////////////////////
 		EmulatorBD(BDout, Objects, manip, t);
 		BDout.close();
 
-		Managing(BDin, Objects, manip);
-
+		Managing(BDin, Objects, manip);// Читает свежезаписанную строчку из BD, сравнивает с состояниями объектов и обновляет состояния объектов на основе этих данных
+	
+		// Если манипулятор не занят, то вызов манип. менеджера 
 		if(manip.condition == 0){
 			manip.ManipManaging(t, Objects, Queue, &stor);
 		}
 		/////////////////////////////////////////////////////
-		Queue.clear();
+		Queue.clear();// очередь чистим
+
+		// Выводим состояние манипулятора и его моточасы
+		/////////////////////////////////////////////
 		out<<t<<"\t";
 		out_MotoTime<<t<<"\t";
 		out<<manip.condition << "\t";
 		out_MotoTime << manip.Motoclock << "\t";
+
+		// вывод состояний объектов
 		/////////////////////////////////////////////
 		for(Operation*& obj : Objects){
 			out<< obj->condition<<"\t";
 			out_MotoTime<<obj->Motoclock<<"\t";
 		}
+
+		// Вывод содержимого контейнеров в гнёздах
 		for (Cell*& Cell : stor.Cells) {
 			out << Cell->container->content << "\t";
 		}
+
+		// Закрытие выходных файлов
 		////////////////////////////////////////
 		out<<"\n";
 		out.close();
@@ -273,4 +302,6 @@ int main(){
 	}
    return 0;
 }
-
+//модиф прогу для работы в реал тайме(сделать делэями расчёт "в реал тайме", добавить функ. вылавливания нужных статусов для вызова каунтер тайм и модели усреднения)
+//модифицировать как сказал АО (чётко разделить комментами каждое действие)
+//9 - txt -> json

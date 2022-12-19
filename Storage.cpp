@@ -27,7 +27,7 @@ int Storage::GetCondit(int flag)const{//flag: 2 - вернуть 2, если есть подающие 
 	}
 	return 1;
 }
-
+//?
 Operation* Storage::GetThisOper(){
 	for(Cell*& cell: Cells){
 		if (cell->GetCondit(0) == 0) {
