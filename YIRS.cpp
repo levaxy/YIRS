@@ -17,7 +17,7 @@ using namespace std;
 #include"Probe.h"
 #include<fstream>
 
-//extern const Container NullContainer{};
+
 
 // Предустановка // Из стартового файла берёт начальное состояние системы
 
@@ -43,7 +43,7 @@ void Init(ifstream& in, vector<Operation*>& obj, Manipulator& manip, Storage& st
 		if(o->condition == 1){
 			o->EndTime = tStart + o->RunTime - TimeInWork;
 		}
-		//всякие штучки приколючки
+	
 		o->PPR = PPR;
 		o->Motoclock = MotorTime;
 		o->NewMotorTime = NewMotorTime;
@@ -69,15 +69,14 @@ void Init(ifstream& in, vector<Operation*>& obj, Manipulator& manip, Storage& st
 	int IDdestination = 0;//ID объекта, куда везёт
 	in>>manip.condition>>IDcont>> IDdestination >> manip.TimeEnd >> PPR >> MotorTime >> NewMotorTime;
 
-	//давай пока предположим, что при предустановке не находится на ППР
-	//если чё, то доп-но по кондитиону надо проверять и в файле вводить время конца ппр
+
 	manip.Motoclock = MotorTime;
 	manip.PPR = PPR;
 	manip.NewMotorTime = NewMotorTime;//это полные моточасы
 
 
 	if(manip.condition == 1){
-		if(IDdestination<10 && IDdestination >= 0){	//проверяем типа что это это не гнездо и по ID ищем пункт назначения
+		if(IDdestination<10 && IDdestination >= 0){	//проверяем что это это не гнездо и по ID ищем пункт назначения
 			for(Operation*& o: obj){
 				if(o->ID == IDdestination){
 					manip.Destination = o;
@@ -99,7 +98,7 @@ void Init(ifstream& in, vector<Operation*>& obj, Manipulator& manip, Storage& st
 
 
 // В файл, эмитирующий БД записывает реальные состояния объектов к текущему моменту, но не меняет сами объекты
-//Здесь не нужно ловить то что гнездо подаёт запрос, так как функция управления состояниями далее это сделает, но не на основе инфы из "БД", а через лабу. Надо здесь игнорить проверку хранилища. Можно сделать в Operation с этой целью метод проверки на конец выполнения CheckEnd, переопределить его у хранилища, чтоб он всегда возвращал фолз.
+//Здесь не нужно ловить то что гнездо подаёт запрос, так как функция управления состояниями далее это сделает, но не на основе инфы из "БД", а через лабу. В Operation с этой целью метод проверки на конец выполнения CheckEnd, переопределён у хранилища, чтоб он всегда возвращал фолз.
 void EmulatorBD(ofstream& BD, const vector<Operation*>& Objects, const Manipulator& manip, const int& current_time){
 	BD<<current_time<<"\t";
 	if(manip.TimeEnd<=current_time && manip.condition == 1){//завершился ли процесс к этому времени
@@ -129,7 +128,7 @@ void EmulatorBD(ofstream& BD, const vector<Operation*>& Objects, const Manipulat
 
 
 // УПРАВЛЕНИЕ СОСТОЯНИЯМИ // Сравнивает с файлом эмитирующим БД состояния объектов, которые остались с прошлой итерации и если есть отличие, то вызывает Completer
-void Managing(ifstream& BD, vector<Operation*>& obj,Manipulator& manip){//Над этой функцией надо подумать
+void Managing(ifstream& BD, vector<Operation*>& obj,Manipulator& manip){
 	int condit = 0, time = 0, ConditManip = 0;
 	BD>>time>>ConditManip;
 	for(Operation*& o: obj){	
